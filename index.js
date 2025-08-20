@@ -103,7 +103,7 @@ No explanations.
     const result = await model.generateContent(prompt);
     // TEMP: force test trade
 const testSignal = 'BUY';   // or 'SELL'
-const order = await sendOrder(testSignal, 0.001);
+const order = await sendOrder(testSignal, 0.0001);
 await pool.query(
   `INSERT INTO kraken_orders (signal, order_id, created_at)
    VALUES ($1, $2, NOW())`,
