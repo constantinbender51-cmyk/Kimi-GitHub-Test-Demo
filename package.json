@@ -11,5 +11,5 @@
     "pg": "^8.11.3",
     "node-fetch": "^3.3.2"
   },
-  "type": "module",
+  "type": "module"
 }
