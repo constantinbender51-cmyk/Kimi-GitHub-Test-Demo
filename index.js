@@ -3,6 +3,7 @@ import fetch from 'node-fetch';
 import pg from 'pg';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+import { sendOrder } from './krakenClient.js';
 
 const { Pool } = pg;
 
