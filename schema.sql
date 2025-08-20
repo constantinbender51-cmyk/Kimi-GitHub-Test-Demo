@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS btc_prices (
+  id SERIAL PRIMARY KEY,
+  price NUMERIC(12,2) NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
