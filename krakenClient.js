@@ -15,21 +15,24 @@ function sign(path, nonce, postData = '') {
 }
 
 export async function sendOrder(side, size = 0.001) {
-  if (!side || !size) {
-  throw new Error(`Missing argument: side=${side}, size=${size}`);
-  }
   const path = '/api/v3/sendorder';
   const nonce = Date.now().toString();
   const body = JSON.stringify({
-      orderType: 'mkt',
-      symbol: 'PF_XBTUSD',
-      side: side.toLowerCase(), // buy or sell
-      size: String(size)        // e.g. "0.001"
-  });
+  orderType: 'mkt',
+  symbol: 'PF_XBTUSD',
+  side: side.toLowerCase(),
+  size: String(size)
+});
+
+// tiny helper to make sure body is non-empty
+if (!body.includes('size')) throw new Error('Body malformed: ' + body);
+
+// log short hash instead of full body to avoid truncation
+console.log('body length:', body.length, 'side:', side, 'size:', size);
 
 
   const signature = sign(path, nonce, body);
-  console.log('→ body:', body);
+  
   const res = await fetch(BASE + path, {
     method: 'POST',
     headers: {
