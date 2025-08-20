@@ -1,6 +1,9 @@
 import express from 'express';
 import fetch from 'node-fetch';
 import pg from 'pg';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
 const { Pool } = pg;
 
 const app = express();
@@ -68,5 +71,44 @@ app.get('/candles', async (_req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+app.get("/signals", async (_req, res) => {
+  try {
+    // 1. pull the last 52 closes
+    const { rows } = await pool.query(`
+      SELECT date, close
+      FROM btc_candles
+      ORDER BY date ASC
+    `);
+    const closes = rows.map(r => Number(r.close));
+
+    // 2. build a tiny prompt
+    const prompt = `
+Below are the last 52 daily closing prices of Bitcoin (oldest → newest):
+${closes.join(",")}
+
+Based only on this price history, output exactly one word: BUY, SELL, or HOLD.
+No explanations.
+`.trim();
+
+    // 3. call Gemini
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent(prompt);
+    const signal = result.response.text().trim().toUpperCase();
+
+    // 4. store the signal
+    await pool.query(`
+      INSERT INTO btc_signals (signal_text, created_at)
+      VALUES ($1, NOW())
+    `, [signal]);
+
+    // 5. respond
+    res.json({ signal, based_on_rows: rows.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 app.listen(PORT, () => console.log(`Server running on :${PORT}`));
