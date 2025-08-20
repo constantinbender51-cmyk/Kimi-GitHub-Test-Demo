@@ -11,13 +11,6 @@ const PORT = process.env.PORT || 3000;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 // create table if it doesn't exist
 await pool.query(`
-  CREATE TABLE IF NOT EXISTS btc_prices (
-    id SERIAL PRIMARY KEY,
-    price NUMERIC(12,2) NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW()
-  )
-`);
-await pool.query(`
   CREATE TABLE IF NOT EXISTS btc_candles (
     id SERIAL PRIMARY KEY,
     date DATE UNIQUE NOT NULL,
@@ -26,12 +19,18 @@ await pool.query(`
     low  NUMERIC(12,2),
     close NUMERIC(12,2),
     volume NUMERIC(20,2)
-  )
-`);
-await pool.query(`
+  );
+
   CREATE TABLE IF NOT EXISTS btc_signals (
     id SERIAL PRIMARY KEY,
     signal_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS kraken_orders (
+    id SERIAL PRIMARY KEY,
+    signal TEXT,
+    order_id TEXT,
     created_at TIMESTAMP DEFAULT NOW()
   )
 `);
@@ -103,6 +102,15 @@ No explanations.
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(prompt);
     const signal = result.response.text().trim().toUpperCase();
+
+    if (['BUY', 'SELL'].includes(signal)) {
+  const order = await sendOrder(signal, 0.001); // 0.001 BTC notional
+  await pool.query(
+    `INSERT INTO kraken_orders (signal, order_id, created_at)
+     VALUES ($1, $2, NOW())`,
+    [signal, order.order_id]
+  );
+    }
 
     // 4. store the signal
     await pool.query(`
