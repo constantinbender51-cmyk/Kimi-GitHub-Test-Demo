@@ -105,7 +105,7 @@ const result = await model.generateContent(prompt);
 let signal = result.response.text().trim().toUpperCase();
 
 // TEMP: override only for quick test
- signal = 'BUY';
+//signal = 'BUY';
 
 // 4. place trade if signal is BUY or SELL
 if (['BUY', 'SELL'].includes(signal)) {
