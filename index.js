@@ -100,19 +100,26 @@ No explanations.
 `.trim();
 
     // 3. call Gemini
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent(prompt);
-    // TEMP: force test trade
-const testSignal = 'BUY';   // or 'SELL'
-const order = await sendOrder(testSignal, 0.0001);
-await pool.query(
-  `INSERT INTO kraken_orders (signal, order_id, created_at)
-   VALUES ($1, $2, NOW())`,
-  [testSignal, order.order_id]
-);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const result = await model.generateContent(prompt);
+let signal = result.response.text().trim().toUpperCase();
+
+// TEMP: override only for quick test
+ signal = 'BUY';
+
+// 4. place trade if signal is BUY or SELL
+if (['BUY', 'SELL'].includes(signal)) {
+  const order = await sendOrder(signal, 0.0001);
+  await pool.query(
+    `INSERT INTO kraken_orders (signal, order_id, created_at)
+     VALUES ($1, $2, NOW())`,
+    [signal, order.order_id || order.orderID] // adjust if key differs
+  );
+}
 
 
-    // 4. store the signal
+
+    // 5. store the signal
     await pool.query(`
       INSERT INTO btc_signals (signal_text, created_at)
       VALUES ($1, NOW())
