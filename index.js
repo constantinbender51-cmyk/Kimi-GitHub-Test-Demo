@@ -104,7 +104,7 @@ No explanations.
     const signal = result.response.text().trim().toUpperCase();
 
     if (['BUY', 'SELL'].includes(signal)) {
-  const order = await sendOrder(signal, 0.001); // 0.001 BTC notional
+  const order = await sendOrder(signal, 0.0001); // 0.001 BTC notional
   await pool.query(
     `INSERT INTO kraken_orders (signal, order_id, created_at)
      VALUES ($1, $2, NOW())`,
