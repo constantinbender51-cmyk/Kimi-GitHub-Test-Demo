@@ -18,12 +18,12 @@ export async function sendOrder(side, size = 0.001) {
   const path = '/api/v3/sendorder';
   const nonce = Date.now().toString();
   const body = JSON.stringify({
-    orderType: 'mkt',
-    symbol:    'PF_XBTUSD',
-    side:      side.toLowerCase(), // "buy" or "sell"
-    size:      String(size)     ,
-    limitPrice: ''// e.g. "0.001"
-});
+      orderType: 'mkt',
+      symbol: 'PF_XBTUSD',
+      side: side.toLowerCase(), // buy or sell
+      size: String(size)        // e.g. "0.001"
+  });
+
 
   const signature = sign(path, nonce, body);
 
