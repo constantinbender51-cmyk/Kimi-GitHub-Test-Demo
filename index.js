@@ -28,6 +28,14 @@ await pool.query(`
     volume NUMERIC(20,2)
   )
 `);
+await pool.query(`
+  CREATE TABLE IF NOT EXISTS btc_signals (
+    id SERIAL PRIMARY KEY,
+    signal_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+  )
+`);
+
 
 
 
