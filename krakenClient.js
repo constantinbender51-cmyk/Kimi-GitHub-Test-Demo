@@ -15,6 +15,9 @@ function sign(path, nonce, postData = '') {
 }
 
 export async function sendOrder(side, size = 0.001) {
+  if (!side || !size) {
+  throw new Error(`Missing argument: side=${side}, size=${size}`);
+  }
   const path = '/api/v3/sendorder';
   const nonce = Date.now().toString();
   const body = JSON.stringify({
@@ -26,7 +29,7 @@ export async function sendOrder(side, size = 0.001) {
 
 
   const signature = sign(path, nonce, body);
-
+  console.log('→ body:', body);
   const res = await fetch(BASE + path, {
     method: 'POST',
     headers: {
